@@ -794,9 +794,15 @@ class LogEvent(object):
         if u'lockStats' in doc:
             self._r = doc[u'lockStats'][u'timeLockedMicros'][u'r']
             self._w = doc[u'lockStats'][u'timeLockedMicros'][u'w']
-            self._r_acquiring = doc[u'lockStats']['timeAcquiringMicros'][u'r']
-            self._w_acquiring = doc[u'lockStats']['timeAcquiringMicros'][u'w']
-            locks = 'w:%i' % self.w if self.w != None else 'r:%i' % self.r
+            try:
+				self._r_acquiring = doc[u'lockStats']['timeAcquiringMicros'][u'r']
+			except:
+				pass
+			try:            
+				self._w_acquiring = doc[u'lockStats']['timeAcquiringMicros'][u'w']
+			except:
+				pass            
+			locks = 'w:%i' % self.w if self.w != None else 'r:%i' % self.r
         elif u'locks' in doc:
             locks = json.dumps(doc[u'locks'])
         else:
