@@ -35,19 +35,33 @@ try:
 
             except argparse.ArgumentTypeError as e:
                 # not a file, try open as MongoDB database
-                m = re.match('^(\w+)(?::(\d+))?(?:/([a-zA-Z0-9._-]+))?$', string)
-                if m:
-                    hostname, port, namespace = m.groups()
-                    port = int(port) if port else 27017
-                    namespace = namespace or 'test.system.profile'
-                    if '.' in namespace:
-                        database, collection = namespace.split('.', 1)
-                    else:
-                        database = namespace
-                        collection = 'system.profile'
+                segments = string.split('/')
+                host_port = segments[0]
+                user_pass_host_port = host_port.split('@')
 
-                    if hostname == 'localhost' or re.match('\d+\.\d+\.\d+\.\d+', hostname):
-                        return ProfileCollection(hostname, port, database, collection)
+                if len(user_pass_host_port) > 1:
+                    hostname_port = user_pass_host_port[1].split(':')
+                else:
+                    hostname_port = user_pass_host_port[0].split(':')
+
+                if len(hostname_port) > 1:
+                    port = hostname_port[1]
+                else:
+                    port = None
+
+                hostname = hostname_port[0]
+                namespace = segments[1]
+
+                port = int(port) if port else 27017
+                namespace = namespace or 'test.system.profile'
+                if '.' in namespace:
+                    database, collection = namespace.split('.', 1)
+                else:
+                    database = namespace
+                    collection = 'system.profile'
+
+                if hostname == 'localhost' or re.match('\d+\.\d+\.\d+\.\d+', hostname):
+                    return ProfileCollection(hostname, port, database, collection)
 
                 raise argparse.ArgumentTypeError("can't open %s as file or MongoDB connection string." % string)
 
